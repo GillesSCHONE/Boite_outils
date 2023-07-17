@@ -1,0 +1,133 @@
+---
+output:
+  word_document: default
+  html_document: default
+---
+#Librairies
+
+```{r}
+library(tidyverse)
+library(sf)
+library(viridis)
+library(scales)
+```
+
+
+#Data
+```{r, echo=FALSE}
+#EPCI cible :
+# liste_cible <-c("Le mans Communauté Urbaine"="247200132","Nantes Métropole"="244400404","Angers Loire Métropole"="244900015")
+# 
+# # Villes exclues (communes centre code INSEE)
+# com_exclue<-c("72181","44109","49007")
+
+
+setwd(dir="XXXX")
+data_light_carto=readRDS("DATA_CARTO_LIGHT.rds")
+data_light_carto %>% mutate(artcom0921=100*artcom0921) %>% filter(section=="2")-> data_light1
+
+```
+#Param cartes
+
+
+```{r,echo=FALSE}
+theme_map <- function(...) {
+  theme_minimal() +
+  theme(
+    #text = element_text(family = "sans", color = "#22211d"),
+    axis.line = element_blank(),
+    axis.text.x = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+   # panel.grid.minor = element_line(color = "#ebebe5", size = 0.2),
+    panel.grid.major = element_line(color = "#ebebe5", size = 0.2),
+    panel.grid.minor = element_blank(),
+    plot.background = element_rect(fill = "#f5f5f2", color = NA), 
+    panel.background = element_rect(fill = "#f5f5f2", color = NA), 
+    legend.background = element_rect(fill = "#f5f5f2", color = NA),
+    panel.border = element_blank(),
+    legend.position = "bottom",
+    legend.text=element_text(size=8),
+    plot.title=element_text(size=10),
+
+    ...
+  )
+}
+colors <- heat.colors(5)
+```
+
+
+
+```{r,echo=FALSE}
+
+my_format <- function(x) format(x, scientific = FALSE)
+
+ggplot()+geom_sf(data=data_light1,aes(geometry=geometry,fill=cut_number(densite,4,dig.lab=5)),alpha=1)+
+     scale_fill_manual(values=c(colors[5],colors[4],colors[3],colors[1]))+
+     geom_text(data=data_light1,aes(label = idcomtxt,
+                      x = st_coordinates(st_centroid(geometry))[, 1],
+                      y = st_coordinates(st_centroid(geometry))[, 2]),
+                  size=3,col="black")+
+     labs(x=NULL,y=NULL,title="Densité : hab / km²",fill="")+
+     theme_map()->p11#+
+
+plot(p11,width=10,heigth=10)
+```
+
+```{r,echo=FALSE}
+
+ggplot()+geom_sf(data=data_light1,aes(geometry=geometry,fill=cut_number(artcom0921,4,dig.lab=0)),alpha=1)+
+     scale_fill_manual(values=c(colors[5],colors[4],colors[3],colors[1]))+
+     geom_text(data=data_light1,aes(label = idcomtxt,
+                      x = st_coordinates(st_centroid(geometry))[, 1],
+                      y = st_coordinates(st_centroid(geometry))[, 2]),
+                  size=3,col="black")+
+     theme_map()+
+     labs(x=NULL,y=NULL,title="taux d'artificialisation (en %):",fill="")->p11#+
+
+plot(p11,width=10,heigth=10)
+```
+
+
+```{r,echo=FALSE}
+ggplot()+geom_sf(data=data_light1,aes(geometry=geometry,fill=cut_number(mepart1318,4,dig.lab=5)),alpha=1)+
+      scale_fill_manual(values=c(colors[1],colors[3],colors[4],colors[5]))+
+     geom_text(data=data_light1,aes(label = idcomtxt,
+                      x = st_coordinates(st_centroid(geometry))[, 1],
+                      y = st_coordinates(st_centroid(geometry))[, 2]),
+                  size=3,col="black")+
+     theme_map()+
+     labs(x=NULL,y=NULL,title="Ménages et emplois sup./ha artificialisé",fill="")->p11#+
+
+plot(p11,width=10,heigth=10)
+```
+
+```{r,echo=FALSE}
+
+ggplot()+geom_sf(data=data_light1,aes(geometry=geometry,fill=cut_number(menhab1318,4,dig.lab=5)),alpha=1)+
+     scale_fill_manual(values=c(colors[1],colors[3],colors[4],colors[5]))+
+     geom_text(data=data_light1,aes(label = idcomtxt,
+                      x = st_coordinates(st_centroid(geometry))[, 1],
+                      y = st_coordinates(st_centroid(geometry))[, 2]),
+                  size=3,col="black")+
+     theme_map()+
+     labs(x=NULL,y=NULL,title="Ménages/ha artificialisé à destination de l'habitat",fill="")->p11#+
+
+plot(p11,width=10,heigth=10)
+```
+
+```{r,echo=FALSE}
+ggplot()+geom_sf(data=data_light1,aes(geometry=geometry,fill=cut_number(artpop1318,4,dig.lab=5)),alpha=1)+
+     scale_fill_manual(values=c(colors[5],colors[4],colors[3],colors[1]))+
+     geom_text(data=data_light1,aes(label = idcomtxt,
+                      x = st_coordinates(st_centroid(geometry))[, 1],
+                      y = st_coordinates(st_centroid(geometry))[, 2]),
+                  size=3,col="black")+
+     theme_map()+
+     theme(legend.position = "bottom") +
+     labs(x=NULL,y=NULL,title="Nombre de m² artificialié par hab. supplémentaire",fill="")->p11#+
+
+plot(p11,width=10,heigth=10)
+```
