@@ -1,0 +1,14 @@
+library(tidyverse)
+library(readxl)
+
+
+setwd(dir="U:/DATA/")
+x<-read_excel("U:/DATA/XXXX- Inventaire 2021.xls",col_types = 'guess')
+y<-read.csv("U:/DATA/XXXX- Inventaire 2021.csv")
+colnames(y)[1]="test"
+y %>% filter(str_detect(test,"Total du compte :"))->y_clean
+y_clean$test<-str_replace(y_clean$test,";Total du","Total du")
+y_clean$test<-str_replace(y_clean$test,";+","/")
+y_clean %>% separate(test,c('compte','total'),sep='/')->y_clean2 
+y_clean2$compte<-str_replace(y_clean2$compte,"Total du compte : ","")
+y_clean2 %>% mutate(total=as.numeric(str_replace_all(total," ","")))->y_clean2
