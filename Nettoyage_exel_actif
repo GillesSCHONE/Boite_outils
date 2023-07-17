@@ -12,3 +12,55 @@ y_clean$test<-str_replace(y_clean$test,";+","/")
 y_clean %>% separate(test,c('compte','total'),sep='/')->y_clean2 
 y_clean2$compte<-str_replace(y_clean2$compte,"Total du compte : ","")
 y_clean2 %>% mutate(total=as.numeric(str_replace_all(total," ","")))->y_clean2
+
+
+VERSION CHATGPT : 
+
+
+
+library(tidyverse)
+
+# Supposons que "donnees.csv" est le nom de votre fichier CSV mal structuré
+file_path <- "U:/DATA/CCIN- Inventaire 2021.csv"
+lines <- read_lines(file_path)
+
+# Définir la condition de filtrage
+condition <- "Total du bud"
+
+# Obtenir les numéros de ligne des lignes filtrées
+filtered_rows <- grep(condition, lines)
+line_numbers <- as.numeric(filtered_rows)
+
+# Fonction pour ajouter l'information souhaitée à chaque ligne
+add_info <- function(line, index) {
+  if (any(line_numbers > index)) {
+    after_filtered <- min(line_numbers[line_numbers > index])
+    prefix <- str_sub(lines[after_filtered], 1, 50)
+    return(paste0(prefix, " - ", line))
+  } else {
+    return(line)
+  }
+}
+
+# Appliquer la fonction add_info à chaque ligne de lines
+lines_with_info <- map2_chr(lines, seq_along(lines), ~add_info(.x, .y))
+head(lines_with_info)
+tail(lines_with_info)
+
+
+condition2<-"Total du compte :"
+filtered_rows2 <- grep(condition2, lines_with_info,value=TRUE)
+filtered_rows2<-gsub(";+",";",filtered_rows2)
+filtered_rows2<-gsub(";Total du budget : ","",filtered_rows2)
+filtered_rows2<-gsub("Total du compte : ","",filtered_rows2)
+filtered_rows2<-gsub(" ","",filtered_rows2)
+filtered_rows2<-gsub("€","",filtered_rows2)
+filtered_rows2<-gsub(";-;",";",filtered_rows2)
+
+
+df <- read.table(text = filtered_rows2, sep = ";", header = FALSE)
+df$V7=NULL
+write.csv(df,"version_clean")
+
+
+
